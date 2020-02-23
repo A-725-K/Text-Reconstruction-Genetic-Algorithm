@@ -5,7 +5,7 @@
 
 std::string target;
 const int popmax = 200;
-const float mutationRate = 0.01;
+unsigned int mutationRate = 0;
 long generations = 0;
 
 struct DNA{
@@ -41,14 +41,14 @@ void calcFitnessDNA(DNA &dna, std::string target) {
     dna.fitness = score / dna.genesLength;
 }
 
-void calcFitnessPop(std::vector<DNA> population, std::string target) {
+void calcFitnessPop(std::vector<DNA> &population, std::string target) {
     for(auto dna:population)
         calcFitnessDNA(dna, target);
 }
 
 DNA crossover(DNA partnerA, DNA partnerB){
     DNA child = createDNA(partnerA.genesLength);
-    int midpoint = floor(rand() % partnerA.genesLength);
+    int midpoint = rand() % partnerA.genesLength;
     for(int i=0; i<partnerA.genesLength; i++){
         if(i>midpoint)
             child.genes[i] = child.genes[i];
@@ -58,17 +58,17 @@ DNA crossover(DNA partnerA, DNA partnerB){
     return child;
 }
 
-void mutate(DNA child, float mutationRate){
+void mutate(DNA &child, unsigned int mutationRate){
     for(int i=0; i<child.genesLength; i++){
-        if(rand()%2<mutationRate)
+        if((rand() % 101)<mutationRate)
             child.genes[i] = genRandomChar();
     }
 }
 
-void createGeneration(std::vector<DNA> population, std::vector<DNA> matingPool){
+void createGeneration(std::vector<DNA> &population, std::vector<DNA> matingPool){
     for(int i=0; i<population.size(); i++){
-        int a = floor(rand() % matingPool.size());
-        int b = floor(rand() % matingPool.size());
+        int a = rand() % matingPool.size();
+        int b = rand() % matingPool.size();
         DNA partnerA = matingPool[a];
         DNA partnerB = matingPool[b];
         DNA child = crossover(partnerA, partnerB);
@@ -78,7 +78,7 @@ void createGeneration(std::vector<DNA> population, std::vector<DNA> matingPool){
     generations++;
 }
 
-void naturalSelectionPop(std::vector<DNA> population){
+void naturalSelectionPop(std::vector<DNA> &population){
     float maxFitness = 0;
     for(int i=0; i<population.size(); i++){
         if(population[i].fitness > maxFitness)
@@ -95,7 +95,7 @@ void naturalSelectionPop(std::vector<DNA> population){
     }
 }
 
-void createPopulation(std::string target, float mutationRate, int popmax) {
+void createPopulation(std::string target, unsigned int mutationRate, int popmax) {
     for(int i=0; i<popmax; i++)
         population[i] = createDNA(target.size());
     calcFitnessPop(population, target);
@@ -104,6 +104,7 @@ void createPopulation(std::string target, float mutationRate, int popmax) {
 int main(int argc, const char **argv) {
     srand(time(nullptr));
     target = "To be or not to be";
+    mutationRate = rand() % 101;
     createPopulation(target, mutationRate, popmax);
     
     return 0;
