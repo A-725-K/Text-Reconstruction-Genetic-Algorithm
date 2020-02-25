@@ -4,9 +4,15 @@
 #include <cmath>
 #include <algorithm>
 
-const std::string target = "unicorn";//"to be or not to be";
-const int popmax = 1000;
-const unsigned int mutationRate = 2; //[1, 100] in %
+#define THRESHOLD 0.0001
+#define MAX_FITNESS 1.0
+
+const std::string target = "unicorn";
+//const std::string target = "to be or not to be";
+//const std::string target = "to be or not to be this is the question";
+
+const int popmax = 200;
+const unsigned int mutationRate = 5; //[1, 100] in %
 long long generations = 0;
 
 struct DNA {
@@ -21,7 +27,6 @@ char genRandomChar() {
     return ' ';
   return 'a' + r;
 }
-
 
 DNA createDNA(const unsigned long targetLength) {
   DNA newDNA;
@@ -121,12 +126,13 @@ bool evaluate(std::vector<DNA> population, const std::string target) {
   std::vector<DNA>::iterator best =
     std::max_element(population.begin(),
 		     population.end(),
-		     [](DNA x, DNA y) {return x.fitness > y.fitness;});
-  //auto bestIdx = std::distance(population.begin(), best);
-  if (1.0 - (*best).fitness < 0.0001)
+		     [](DNA x, DNA y) {return x.fitness < y.fitness;});
+  auto bestIdx = std::distance(population.begin(), best);
+  if (MAX_FITNESS - (*best).fitness < THRESHOLD)
     return true;
   
-  std::cout << (*best).genes << "\t" << (*best).fitness << "%" << std::endl;
+  std::cout << "BEST GENE: " << (*best).genes
+	    << "\t\tFITNESS: " << (*best).fitness << "%" << std::endl;
   return false;
 }
 
@@ -165,9 +171,10 @@ int main(int argc, const char **argv) {
     //std::cout << "Generation..." << std::endl;
     createGeneration(population, matingPool);
     //std::cout << "Computing fitness..." << std::endl;
-    calcFitnessPop(population, target);
-    //std::cout << getAverageFitness(population) << "%" << std::endl;
+    calcFitnessPop(population, target); 
   } while(!evaluate(population, target));
-    
+
+  std::cout << "Average fitness: " << getAverageFitness(population) << "%" << std::endl;
+  std::cout << "Generation: " << generations << std::endl;
   return 0;
 }
