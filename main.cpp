@@ -8,12 +8,12 @@
 #define MAX_FITNESS 1.0
 
 //const std::string target = "unicorn";
-const std::string target = "to be or not to be";
-//const std::string target = "to be or not to be that is the question";
+//const std::string target = "to be or not to be";
+const std::string target = "to be or not to be that is the question";
 //const std::string target = "nel mezzo del cammin di nostra vita mi ritrovai per una selva oscura che la diritta via era smarrita";
 
-const int popmax = 200;
-const unsigned int mutationRate = 2; //[1, 100] in %
+const int popmax = 2000;
+const unsigned int mutationRate = 3; //[1, 100] in %
 long long generations = 0;
 
 struct DNA {
@@ -47,7 +47,7 @@ void calcFitnessDNA(DNA &dna, const std::string target) {
     if(target[i] == dna.genes[i])
       score++;
   //std::cout << "DEBUG: score = " << score << std::endl;
-  dna.fitness = pow(score / genesLength, 2); //si puo' fare il quadrato o la potenza di 2
+  dna.fitness = pow(score / genesLength, 4);
   //std::cout << "DEBUG: NEW FITNESS = " << dna.fitness << std::endl;
 }
 
@@ -129,8 +129,10 @@ bool evaluate(std::vector<DNA> population, const std::string target) {
 		     population.end(),
 		     [](DNA x, DNA y) {return x.fitness < y.fitness;});
   //auto bestIdx = std::distance(population.begin(), best);
-  if (MAX_FITNESS - (*best).fitness < THRESHOLD)
+  if (MAX_FITNESS - (*best).fitness < THRESHOLD) {
+    std::cout << std::endl << "*** RESULT ***" << std::endl << (*best).genes << std::endl;
     return true;
+  }
   
   std::cout << "BEST GENE: " << (*best).genes
 	    << "\t\tFITNESS: " << (*best).fitness /** 100 << "%"*/ << std::endl;
