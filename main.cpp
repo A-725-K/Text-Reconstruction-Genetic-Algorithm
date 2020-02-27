@@ -7,18 +7,18 @@
 #define THRESHOLD 0.0001
 #define MAX_FITNESS 1.0
 
-const std::string target = "unicorn";
-//const std::string target = "to be or not to be";
-//const std::string target = "to be or not to be this is the question";
+//const std::string target = "unicorn";
+const std::string target = "to be or not to be";
+//const std::string target = "to be or not to be that is the question";
+//const std::string target = "nel mezzo del cammin di nostra vita mi ritrovai per una selva oscura che la diritta via era smarrita";
 
 const int popmax = 200;
-const unsigned int mutationRate = 5; //[1, 100] in %
+const unsigned int mutationRate = 2; //[1, 100] in %
 long long generations = 0;
 
 struct DNA {
-  char *genes;
-  unsigned long genesLength;
-  float fitness;
+  std::string genes;
+  double fitness;
 };
 
 char genRandomChar() {
@@ -30,12 +30,9 @@ char genRandomChar() {
 
 DNA createDNA(const unsigned long targetLength) {
   DNA newDNA;
-    
   newDNA.fitness = 0.0;
-  newDNA.genes = new char[targetLength + 1];
-  newDNA.genes[targetLength] = '\0';
-  newDNA.genesLength = targetLength;
-  for (int i=0; i<targetLength; i++)
+  newDNA.genes = std::string(targetLength, '\0');
+  for (unsigned int i=0; i<targetLength; i++)
     newDNA.genes[i] = genRandomChar();
    
   //std::cout << "DEBUG: " << newDNA.genes << std::endl;
@@ -43,18 +40,19 @@ DNA createDNA(const unsigned long targetLength) {
 }
 
 void calcFitnessDNA(DNA &dna, const std::string target) {
-  float score = 0;
+  double score = 0;
+  unsigned int genesLength = dna.genes.size();
   //std::cout << "DEBUG: dna.genesLength = " << dna.genesLength << std::endl;
-  for (int i=0; i<dna.genesLength; i++)
+  for (unsigned int i=0; i<genesLength; i++)
     if(target[i] == dna.genes[i])
       score++;
   //std::cout << "DEBUG: score = " << score << std::endl;
-  dna.fitness = score / dna.genesLength;
+  dna.fitness = pow(score / genesLength, 2); //si puo' fare il quadrato o la potenza di 2
   //std::cout << "DEBUG: NEW FITNESS = " << dna.fitness << std::endl;
 }
 
 void calcFitnessPop(std::vector<DNA> &population, const std::string target) {
-  for (int i=0; i<population.size(); i++)
+  for (unsigned int i=0; i<population.size(); i++)
     calcFitnessDNA(population[i], target);
 }
 
@@ -65,9 +63,10 @@ void createPopulation(std::vector<DNA> &population, const std::string target, co
 }
 
 DNA crossover(const DNA partnerA, const DNA partnerB) {
-  DNA child = createDNA(partnerA.genesLength);
-  int midpoint = rand() % partnerA.genesLength;
-  for(int i=0; i<partnerA.genesLength; i++){
+  unsigned int genesLength = partnerA.genes.size();
+  DNA child = createDNA(genesLength);
+  unsigned int midpoint = rand() % genesLength;
+  for(unsigned int i=0; i<genesLength; i++){
     if(i > midpoint)
       child.genes[i] = partnerA.genes[i];
     else
@@ -77,17 +76,18 @@ DNA crossover(const DNA partnerA, const DNA partnerB) {
 }
 
 void mutate(DNA &child, const unsigned int mutationRate) {
-  for(int i=0; i<child.genesLength; i++)
-    if((rand() % 101) <= mutationRate)
+  for(unsigned int i=0; i<child.genes.size(); i++)
+    if(static_cast<unsigned int>(rand() % 101) <= mutationRate)
       child.genes[i] = genRandomChar();
 }
 
 void createGeneration(std::vector<DNA> &population, std::vector<DNA> &matingPool) {
   //std::cout << "DEBUG: pop size = " << population.size() << std::endl;
   //std::cout << "DEBUG: mating size = " << matingPool.size() << std::endl;
-  for(int i=0; i<population.size(); i++){
-    int a = rand() % matingPool.size();
-    int b = rand() % matingPool.size();
+
+  for(unsigned int i=0; i<population.size(); i++){
+    unsigned int a = rand() % matingPool.size();
+    unsigned int b = rand() % matingPool.size();
     DNA partnerA = matingPool[a];
     DNA partnerB = matingPool[b];
     DNA child = crossover(partnerA, partnerB);
@@ -95,28 +95,29 @@ void createGeneration(std::vector<DNA> &population, std::vector<DNA> &matingPool
     population[i] = child;
   }
   generations++;
-  matingPool.clear();
+  matingPool.erase(matingPool.begin(), matingPool.end());
 }
 
 void naturalSelectionPop(std::vector<DNA> &population, std::vector<DNA> &matingPool) {
   float maxFitness = population[0].fitness;
-  for(int i=1; i<population.size(); i++)
+  for(unsigned int i=1; i<population.size(); i++)
     if(population[i].fitness > maxFitness)
       maxFitness = population[i].fitness;
-  //std::cout << "DEBUG: maxFitness = " << maxFitness << std::endl;	
-
-  for(int i=0; i<population.size(); i++) {
+  //std::cout << "DEBUG: maxFitness = " << maxFitness << std::endl;
+  
+  for(unsigned int i=0; i<population.size(); i++) {
     float fitness = population[i].fitness/maxFitness;
     //std::cout << "DEBUG: fitness = " << fitness << std::endl;
     int n = fitness * 100;
     //std::cout << "DEBUG: n = " << n << std::endl;
-    for(int j=0; j<n; j++)
+    for(int j=0; j<n; j++) {
       matingPool.push_back(population[i]);
+    }
   }
 }
 
-float getAverageFitness(const std::vector<DNA> population) {
-  float avg = 0;
+double getAverageFitness(const std::vector<DNA> population) {
+  double avg = 0;
   for (auto dna : population)
     avg += dna.fitness;
   return avg / population.size();
@@ -127,12 +128,12 @@ bool evaluate(std::vector<DNA> population, const std::string target) {
     std::max_element(population.begin(),
 		     population.end(),
 		     [](DNA x, DNA y) {return x.fitness < y.fitness;});
-  auto bestIdx = std::distance(population.begin(), best);
+  //auto bestIdx = std::distance(population.begin(), best);
   if (MAX_FITNESS - (*best).fitness < THRESHOLD)
     return true;
   
   std::cout << "BEST GENE: " << (*best).genes
-	    << "\t\tFITNESS: " << (*best).fitness << "%" << std::endl;
+	    << "\t\tFITNESS: " << (*best).fitness /** 100 << "%"*/ << std::endl;
   return false;
 }
 
@@ -146,7 +147,6 @@ void printFitness(std::vector<DNA> pop) {
 
 int main(int argc, const char **argv) {
   srand(time(nullptr));
-  //mutationRate = rand() % 101;
     
   std::vector<DNA> population;
   std::vector<DNA> matingPool;
@@ -174,7 +174,7 @@ int main(int argc, const char **argv) {
     calcFitnessPop(population, target); 
   } while(!evaluate(population, target));
 
-  std::cout << "Average fitness: " << getAverageFitness(population) << "%" << std::endl;
-  std::cout << "Generation: " << generations << std::endl;
+  std::cout << "Average fitness: " << getAverageFitness(population) /** 100 << "%"*/ << std::endl;
+  std::cout << "Generations: " << generations << std::endl;
   return 0;
 }
