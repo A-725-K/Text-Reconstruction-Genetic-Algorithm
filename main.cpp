@@ -3,17 +3,15 @@
 #include <vector>
 #include <cmath>
 #include <algorithm>
+#include <fstream>
+#include <stdlib.h>
+#include <chrono>
 
 #define THRESHOLD 0.0001
 #define MAX_FITNESS 1.0
 #define MATING_RATE 100
 
-//const std::string target = "unicorn";
-//const std::string target = "to be or not to be";
-const std::string target = "nel mezzo del cammin di nostra vita mi ritrovai per una selva oscura che la diritta via era smarrita ahi quanto a dir qual era e cosa dura esta selva selvaggia e aspra e forte che nel pensier rinova la paura";
-
-const int popmax = 500;
-const unsigned int mutationRate = 2; //[1, 100] in %
+std::string target;
 long long generations = 0;
 
 struct DNA {
@@ -50,14 +48,28 @@ void calcFitnessDNA(DNA &dna, const std::string target) {
 }
 
 void calcFitnessPop(std::vector<DNA> &population, const std::string target) {
+    
+  auto start = std::chrono::system_clock::now();
+    
   for (unsigned int i=0; i<population.size(); i++)
     calcFitnessDNA(population[i], target);
+    
+    
+    auto end = std::chrono::system_clock::now();
+    std::chrono::duration<double> elapsed = end - start;
+    std::cout << "Fitness elapsed time: " << elapsed.count() << "s" << std::endl;
 }
 
 void createPopulation(std::vector<DNA> &population, const std::string target, const int popmax) {
+  auto start = std::chrono::system_clock::now();
+    
   for(int i=0; i<popmax; i++)
     population.push_back(createDNA(target.size()));
   calcFitnessPop(population, target);
+    
+  auto end = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed = end - start;
+  std::cout << "Create population elapsed time: " << elapsed.count() << "s" << std::endl;
 }
 
 DNA crossover(const DNA partnerA, const DNA partnerB) {
@@ -82,7 +94,9 @@ void mutate(DNA &child, const unsigned int mutationRate) {
       child.genes[i] = genRandomChar();
 }
 
-void createGeneration(std::vector<DNA> &population, std::vector<DNA> &matingPool) {
+void createGeneration(std::vector<DNA> &population, std::vector<DNA> &matingPool, unsigned int mutationRate) {
+  auto start = std::chrono::system_clock::now();
+    
   for(unsigned int i=0; i<population.size(); i++){
     unsigned int a = rand() % matingPool.size();
     unsigned int b = rand() % matingPool.size();
@@ -94,9 +108,16 @@ void createGeneration(std::vector<DNA> &population, std::vector<DNA> &matingPool
   }
   generations++;
   matingPool.erase(matingPool.begin(), matingPool.end());
+    
+  auto end = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed = end - start;
+  std::cout << "Create generation elapsed time: " << elapsed.count() << "s" << std::endl;
 }
 
 void naturalSelectionPop(std::vector<DNA> &population, std::vector<DNA> &matingPool) {
+    
+  auto start = std::chrono::system_clock::now();
+    
   std::vector<DNA>::iterator best =
     std::max_element(population.begin(),
 		     population.end(),
@@ -109,6 +130,11 @@ void naturalSelectionPop(std::vector<DNA> &population, std::vector<DNA> &matingP
     for(int j=0; j<n; j++)
       matingPool.push_back(population[i]);
   }
+    
+    
+  auto end = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed = end - start;
+  std::cout << "Natural selection elapsed time: " << elapsed.count() << "s" << std::endl;
 }
 
 double getAverageFitness(const std::vector<DNA> population) {
@@ -123,7 +149,7 @@ bool evaluate(std::vector<DNA> population, const std::string target) {
     std::max_element(population.begin(),
 		     population.end(),
 		     [](DNA x, DNA y) {return x.fitness < y.fitness;});
-  //auto bestIdx = std::distance(population.begin(), best);
+    
   if (MAX_FITNESS - (*best).fitness < THRESHOLD) {
     std::cout << std::endl << "*** RESULT ***" << std::endl << (*best).genes << std::endl;
     return true;
@@ -134,19 +160,36 @@ bool evaluate(std::vector<DNA> population, const std::string target) {
   return false;
 }
 
-
 void printFitness(std::vector<DNA> pop) {
   int i = 0;
   for (auto x : pop)
     std::cout << i++ << " --> " << x.fitness << std::endl;
 }
 
-
-int main(int argc, const char **argv) {
+int main(int argc, char *argv[]) {
   srand(time(nullptr));
     
   std::vector<DNA> population;
   std::vector<DNA> matingPool;
+  unsigned int mutationRate = 2;
+  int popmax = 500;
+    std::string fileString = "file.txt";
+    
+  if(argc == 3){
+    mutationRate = strtol(argv[0], NULL, 10);
+    popmax = strtol(argv[1], NULL, 10);
+    fileString = argv[2];
+  }
+    
+  std::ifstream file(fileString);
+    
+  if (file.is_open()) {
+      while (!file.eof()) {
+          getline(file, target);
+      }
+  }else{
+      std::cout << "File not found" << std::endl;
+  }
     
   std::cout << "/*******************\\" << std::endl
 	    << "|* HYPERPARAMETERS *|"  << std::endl
@@ -157,6 +200,9 @@ int main(int argc, const char **argv) {
   std::cout << "Mutation rate: " << mutationRate << std::endl << std::endl;
     
   std::cout << "Creating population..." << std::endl;
+    
+  auto start = std::chrono::system_clock::now();
+    
   createPopulation(population, target, popmax);
   std::cout << std::endl;
   //printFitness(population);
@@ -166,10 +212,14 @@ int main(int argc, const char **argv) {
     //std::cout << "Selection..." << std::endl;
     naturalSelectionPop(population, matingPool);
     //std::cout << "Generation..." << std::endl;
-    createGeneration(population, matingPool);
+    createGeneration(population, matingPool, mutationRate);
     //std::cout << "Computing fitness..." << std::endl;
     calcFitnessPop(population, target); 
   } while(!evaluate(population, target));
+    
+  auto end = std::chrono::system_clock::now();
+  std::chrono::duration<double> elapsed = end - start;
+  std::cout << "Elapsed time: " << elapsed.count() << "s" << std::endl;
 
   std::cout << "Average fitness: " << getAverageFitness(population) << std::endl;
   std::cout << "Generations: " << generations << std::endl;
