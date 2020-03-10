@@ -1,5 +1,7 @@
 #include "population.h"
 
+long long generations = 0;
+
 void calcFitnessPop(std::vector<DNA> &population, const std::string target) {
   auto start = std::chrono::system_clock::now();
     

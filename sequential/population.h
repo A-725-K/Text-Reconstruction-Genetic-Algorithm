@@ -12,4 +12,4 @@ double getAverageFitness(const std::vector<DNA>);
 bool evaluate(std::vector<DNA>, const std::string);
 void printFitness(const std::vector<DNA>);
   
-static long long generations = 0;
+extern long long generations;
