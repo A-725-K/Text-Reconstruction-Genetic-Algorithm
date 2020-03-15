@@ -3,31 +3,41 @@
 long long generations = 0;
 
 void calcFitnessPop(std::vector<DNA> &population, const std::string target) {
+#ifdef DEBUG
   auto start = std::chrono::system_clock::now();
-    
+#endif  
+  
   for (unsigned int i=0; i<population.size(); i++)
     calcFitnessDNA(population[i], target);
-    
+
+#ifdef DEBUG    
   auto end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed = end - start;
   std::cout << "Fitness elapsed time: " << elapsed.count() << " s" << std::endl;
+#endif
 }
 
 void createPopulation(std::vector<DNA> &population, const std::string target, const int popmax) {
+#ifdef DEBUG
   auto start = std::chrono::system_clock::now();
-    
+#endif    
+
   for(int i=0; i<popmax; i++)
     population.push_back(createDNA(target, target.size()));
   calcFitnessPop(population, target);
-    
+
+#ifdef DEBUG    
   auto end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed = end - start;
   std::cout << "Create population elapsed time: " << elapsed.count() << " s" << std::endl;
+#endif
 }
 
 void createGeneration(std::vector<DNA> &population, std::vector<DNA> &matingPool, unsigned int mutationRate, const std::string target) {
+#ifdef DEBUG
   auto start = std::chrono::system_clock::now();
-    
+#endif    
+
   for(unsigned int i=0; i<population.size(); i++){
     unsigned int a = rand() % matingPool.size();
     unsigned int b = rand() % matingPool.size();
@@ -39,15 +49,19 @@ void createGeneration(std::vector<DNA> &population, std::vector<DNA> &matingPool
   }
   generations++;
   matingPool.erase(matingPool.begin(), matingPool.end());
-    
+
+#ifdef DEBUG    
   auto end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed = end - start;
   std::cout << "Create generation elapsed time: " << elapsed.count() << " s" << std::endl;
+#endif
 }
 
 void naturalSelectionPop(std::vector<DNA> &population, std::vector<DNA> &matingPool) {
+#ifdef DEBUG
   auto start = std::chrono::system_clock::now();
-    
+#endif 
+
   std::vector<DNA>::iterator best =
     std::max_element(population.begin(),
 		     population.end(),
@@ -60,10 +74,12 @@ void naturalSelectionPop(std::vector<DNA> &population, std::vector<DNA> &matingP
     for(int j=0; j<n; j++)
       matingPool.push_back(population[i]);
   }
-    
+
+#ifdef DEBUG    
   auto end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed = end - start;
   std::cout << "Natural selection elapsed time: " << elapsed.count() << " s" << std::endl;
+#endif
 }
 
 double getAverageFitness(const std::vector<DNA> population) {

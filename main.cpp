@@ -1,4 +1,4 @@
-#include "population.h"
+#include "src/population.h"
 
 int main(int argc, char *argv[]) {
   srand(time(nullptr));
