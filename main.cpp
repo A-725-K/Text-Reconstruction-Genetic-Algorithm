@@ -17,7 +17,7 @@ int main(int argc, char *argv[]) {
 	std::cerr << "ERROR: File not found!" << std::endl;
 	break;
       case USAGE_EXCEPTION:
-	std::cerr << "Usage: ./a.out <mutation_rate> <population_size> <input_file>" << std::endl;
+	std::cerr << "Usage: ./genetic.out <mutation_rate> <population_size> <input_file>" << std::endl;
 	break;
     }
     
