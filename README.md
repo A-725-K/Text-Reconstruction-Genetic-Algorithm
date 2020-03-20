@@ -1,4 +1,4 @@
-# HPC-Text-Reconstruction-GA
+# Text-Reconstruction-Genetic-Algorithm
 Reconstruction of a text using genetic algorithm technique. This little project is inspired by the very famous ***Infinite Monkey Theorem*** that states that a monkey hitting keys at random on a typewriter keyboard for an infinite amount of time will almost surely type any given text, such as the complete works of William Shakespeare. We can ensure the termination of the program due to the insertion of the *DNA mask* which control the convergence (making it total) of the genetic algorithm.
 
 ## Getting started
