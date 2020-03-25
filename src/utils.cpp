@@ -1,5 +1,12 @@
 #include "utils.h"
 
+/*
+ * Read dataset directly from file
+ *
+ * @input [filename]: path of the dataset
+ *
+ * @output [content]: the dataset in form of a std::string
+ */
 std::string readFile(char *fileName) {
   std::string content;
   std::ifstream file(fileName);
@@ -18,6 +25,15 @@ std::string readFile(char *fileName) {
   throw FILE_NOT_FOUND_EXCEPTION;
 }
 
+/*
+ * Checks that all command line arguments are correct
+ *
+ * @input [argc]: number of cli arguments
+ * @input [argv]: cli arguments
+ * @input [popmax]: size of the initial population
+ * @input [mutationRate]: probability of mutation (in percentage)
+ * @input [target]: text to be recreated
+ */
 void checkCliArguments(int argc, char *argv[], unsigned int &popmax, unsigned int &mutationRate, std::string &target) {
   if(argc != 4)
     throw USAGE_EXCEPTION;

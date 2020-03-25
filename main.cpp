@@ -8,7 +8,8 @@ int main(int argc, char *argv[]) {
   std::vector<DNA> matingPool;
   unsigned int mutationRate;
   unsigned int popmax;
-  
+
+  //check the input of the user
   try {
     checkCliArguments(argc, argv, popmax, mutationRate, target);
   } catch (MY_EXCEPTIONS genericException) {
@@ -26,7 +27,8 @@ int main(int argc, char *argv[]) {
     std::cerr << "ERROR: " << ex.what() << std::endl;
     exit(EXIT_FAILURE);
   }
-    
+
+  //print some useful information
   std::cout << "/*******************\\" << std::endl
 	    << "|* HYPERPARAMETERS *|"  << std::endl
 	    << "\\*******************/" << std::endl;
@@ -40,6 +42,9 @@ int main(int argc, char *argv[]) {
 #ifdef DEBUG
   std::cout << "Creating population..." << std::endl;
 #endif
+
+  //initialization of the algorithm:
+  // - phase (0): creating the population
   createPopulation(population, target, popmax);
   std::cout << std::endl;
 
@@ -47,6 +52,12 @@ int main(int argc, char *argv[]) {
   printFitness(population);
   std::cout << "### MAIN LOOP ###" << std::endl;
 #endif
+
+  //core of the algorithm:
+  // - phase (1): natural selection
+  // - phase (2): creating a new generation
+  // - phase (3): compute fitness of the new generation
+  // - phase (4): evaluate the generation and go to (1)
   do {
 #ifdef DEBUG
     std::cout << "Selection..." << std::endl;
@@ -61,7 +72,8 @@ int main(int argc, char *argv[]) {
 #endif
     calcFitnessPop(population, target); 
   } while(!evaluate(population, target));
-    
+
+  //print the results
   auto end = std::chrono::system_clock::now();
   std::chrono::duration<double> elapsed = end - start;
   std::cout << "Elapsed time: " << elapsed.count() << " s" << std::endl;

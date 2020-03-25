@@ -3,7 +3,7 @@
 struct DNA {
   std::string genes;
   double fitness;
-  std::vector<bool> mask;
+  std::vector<bool> mask; // boolean mask to guarantee total convergence of the algorithm
 };
 
 DNA createDNA(const std::string, const unsigned long);
